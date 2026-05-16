@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Procedure Room</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e0e;--text:#d4d0c8;--muted:#6b6860;--sup:#8a8478;
+  --border:#2a2a28;--btn:#3a3a38;--btn-hover:#1a1a18;--accent:#4a4a48;
+  --green:#4a7c59;--red:#7c4a4a;--yellow:#7c6e4a;
+  --panel:#141412;--tab:#1a1a18;--tab-active:#222220;
+  --font:"Courier New",Courier,monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.7;min-height:100vh}
+
+/* ── MISSION CONTROL ── */
+#mc{display:flex;flex-direction:column;min-height:100vh;padding:2rem 1.5rem}
+#mc-header{text-align:center;margin-bottom:2rem}
+#mc-header h1{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+#mc-header p{font-size:11px;color:var(--accent);letter-spacing:.1em}
+.mc-tabs{display:flex;gap:2px;margin-bottom:0;border-bottom:1px solid var(--border)}
+.mc-tab{padding:8px 20px;font-family:var(--font);font-size:12px;letter-spacing:.08em;background:var(--tab);color:var(--muted);border:1px solid var(--border);border-bottom:none;cursor:pointer;transition:all .15s}
+.mc-tab.active{background:var(--tab-active);color:var(--text);border-color:var(--accent)}
+.mc-panel{background:var(--panel);border:1px solid var(--border);border-top:none;padding:1.5rem;flex:1}
+.mc-section{margin-bottom:1.8rem}
+.mc-section label{display:block;font-size:11px;letter-spacing:.1em;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase}
+.mc-section textarea{width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:12px;padding:.6rem;line-height:1.6;resize:vertical;min-height:90px;border-radius:3px}
+.mc-section textarea:focus{outline:none;border-color:var(--accent)}
+.scene-editor{margin-bottom:1rem;padding:.8rem;border:1px solid var(--border);border-radius:3px;background:#0c0c0a}
+.scene-editor h3{font-size:10px;letter-spacing:.12em;color:var(--accent);margin-bottom:.6rem;text-transform:uppercase}
+.speed-row{display:flex;align-items:center;gap:1rem;margin-bottom:.8rem}
+.speed-row span{font-size:11px;color:var(--muted);min-width:80px}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.speed-label{font-size:12px;color:var(--text);min-width:90px;text-align:right}
+.img-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.img-slot{border:1px solid var(--border);border-radius:4px;overflow:hidden;background:#0a0a0a}
+.img-slot-label{padding:.5rem .7rem;font-size:10px;letter-spacing:.1em;color:var(--muted);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.img-slot-label button{font-size:10px;font-family:var(--font);background:transparent;border:1px solid var(--border);color:var(--muted);padding:2px 8px;cursor:pointer;border-radius:2px}
+.img-slot-label button:hover{color:var(--text);border-color:var(--accent)}
+.img-preview{width:100%;height:140px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.img-preview svg,.img-preview img{width:100%;height:100%;object-fit:contain}
+.img-preview .img-placeholder{font-size:10px;color:var(--accent);text-align:center;padding:1rem}
+.img-upload{display:none}
+.mc-footer{display:flex;justify-content:space-between;align-items:center;padding:1rem 0 0;border-top:1px solid var(--border);margin-top:1rem}
+.mc-footer .hint{font-size:11px;color:var(--muted)}
+button.launch{background:transparent;border:1px solid var(--green);color:#6aaa7a;font-family:var(--font);font-size:13px;padding:10px 32px;cursor:pointer;letter-spacing:.1em;transition:all .2s}
+button.launch:hover{background:rgba(74,124,89,.15)}
+button.reset-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font);font-size:11px;padding:6px 14px;cursor:pointer}
+button.reset-btn:hover{color:var(--text);border-color:var(--accent)}
+
+/* ── GAME ── */
+#game{display:none;max-width:600px;margin:0 auto;padding:3rem 1.5rem 5rem}
+#g-header{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;opacity:.5}
+#level-bar{font-size:11px;letter-spacing:.08em;color:var(--muted);margin-bottom:2.5rem;display:flex;gap:1.5rem;flex-wrap:wrap}
+.lvl-dot{opacity:.3}.lvl-dot.active{opacity:1;color:var(--text)}.lvl-dot.done{opacity:.6;color:var(--green)}
+#log .scene-gap{margin-bottom:1.4rem}
+#log .line{opacity:.2;font-size:13px;margin-bottom:.4rem}
+#log .line.sup{font-style:italic;color:var(--sup);padding-left:1rem;border-left:2px solid var(--accent)}
+.line{margin-bottom:.65rem;min-height:1.6em;font-size:14px}
+.line.sup{font-style:italic;color:var(--sup);padding-left:1rem;border-left:2px solid var(--accent)}
+.line.good{color:#6aaa7a}.line.bad{color:#aa6a6a}.line.warn{color:#aa9a5a}
+#actions{margin-top:1.8rem;display:flex;flex-wrap:wrap;gap:10px;min-height:40px}
+button.act-btn{background:transparent;border:.5px solid var(--btn);border-radius:6px;padding:8px 16px;font-size:13px;font-family:var(--font);color:var(--text);cursor:pointer;letter-spacing:.04em;transition:background .15s}
+button.act-btn:hover{background:var(--btn-hover)}
+button.act-btn.correct{border-color:var(--green);color:#6aaa7a}
+button.act-btn.wrong{border-color:var(--red);color:#aa6a6a}
+button.act-btn.disabled{opacity:.35;pointer-events:none}
+#score-bar{margin-top:2rem;font-size:12px;color:var(--muted);letter-spacing:.05em}
+#score-bar span{color:var(--text)}
+.graphic{margin:1.4rem 0;border:1px solid var(--border);border-radius:4px;overflow:hidden;background:#0a0a0a}
+.graphic img{width:100%;display:block;max-height:280px;object-fit:contain}
+.graphic svg{display:block;width:100%}
+.graphic figcaption{font-size:10px;color:var(--muted);padding:.35rem .6rem;letter-spacing:.06em;border-top:1px solid var(--border)}
+#back-btn{position:fixed;top:1rem;right:1rem;font-family:var(--font);font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;cursor:pointer;border-radius:3px;z-index:100}
+#back-btn:hover{color:var(--text);border-color:var(--accent)}
+#certificate{display:none;border:1px solid var(--accent);padding:2.5rem 2rem;margin-top:2rem;text-align:center;line-height:2}
+#certificate h1{font-size:16px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:1rem}
+#certificate p{font-size:13px;color:var(--muted);margin-bottom:.5rem}
+#certificate .cert-name{font-size:18px;color:var(--text);border-bottom:1px solid var(--accent);padding-bottom:.5rem;margin:.8rem 0}
+#certificate .stamp{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-top:1.5rem}
+#certificate .sim-invite{margin-top:1.5rem;padding:1rem;border:1px solid var(--green);color:#6aaa7a;font-size:13px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     MISSION CONTROL
+════════════════════════════════════════════ -->
+<div id="mc">
+  <div id="mc-header">
+    <h1>The Procedure Room — Mission Control</h1>
+    <p>configure · customise · launch</p>
+  </div>
+
+  <div class="mc-tabs">
+    <button class="mc-tab active" onclick="showTab('text')">① Text</button>
+    <button class="mc-tab" onclick="showTab('speed')">② Speed</button>
+    <button class="mc-tab" onclick="showTab('images')">③ Images</button>
+  </div>
+
+  <div class="mc-panel">
+
+    <!-- TEXT TAB -->
+    <div id="tab-text">
+      <div class="mc-section">
+        <label>Level 1 — Guided (one line per row; prefix with [sup] for supervisor voice)</label>
+        <div id="l1-editors"></div>
+      </div>
+      <div class="mc-section">
+        <label>Level 2 — Prompted (question | option1 | option2 | option3 | option4 | correct index 0–3)</label>
+        <div id="l2-editors"></div>
+      </div>
+      <div class="mc-section">
+        <label>Level 3 — Independent (same format as Level 2)</label>
+        <div id="l3-editors"></div>
+      </div>
+    </div>
+
+    <!-- SPEED TAB -->
+    <div id="tab-speed" style="display:none">
+      <div class="mc-section">
+        <label>Text reveal speed</label>
+        <div class="speed-row">
+          <span style="color:var(--muted)">instant</span>
+          <input type="range" id="speed-slider" min="0" max="60" value="0" oninput="updateSpeedLabel()"/>
+          <span style="color:var(--muted)">cinematic</span>
+        </div>
+        <div class="speed-row">
+          <span>Current setting:</span>
+          <span class="speed-label" id="speed-label">Instant (0 ms)</span>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:.8rem">At 0 ms text appears immediately. Higher values type each character with the selected delay, creating dramatic tension.</p>
+      </div>
+      <div class="mc-section">
+        <label>Scene transition delay</label>
+        <div class="speed-row">
+          <span style="color:var(--muted)">none</span>
+          <input type="range" id="delay-slider" min="0" max="800" step="50" value="50" oninput="updateDelayLabel()"/>
+          <span style="color:var(--muted)">long pause</span>
+        </div>
+        <div class="speed-row">
+          <span>Current setting:</span>
+          <span class="speed-label" id="delay-label">50 ms</span>
+        </div>
+      </div>
+      <div class="mc-section">
+        <label>Preview</label>
+        <div style="border:1px solid var(--border);padding:1rem;background:#0a0a0a;min-height:60px;font-size:14px">
+          <span id="preview-text"></span><span id="preview-cursor" style="opacity:.5">▋</span>
+        </div>
+        <button style="margin-top:.6rem;font-family:var(--font);font-size:11px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;cursor:pointer" onclick="runPreview()">run preview</button>
+      </div>
+    </div>
+
+    <!-- IMAGES TAB -->
+    <div id="tab-images" style="display:none">
+      <div class="mc-section">
+        <label>Upload your own images — or keep the built-in illustrations</label>
+        <div class="img-grid">
+          <div class="img-slot">
+            <div class="img-slot-label">
+              <span>① procedural tray</span>
+              <button onclick="triggerUpload('tray')">upload</button>
+            </div>
+            <div class="img-preview" id="prev-tray"><div class="img-placeholder">built-in SVG illustration<br>(click upload to replace)</div></div>
+            <input type="file" class="img-upload" id="upload-tray" accept="image/*" onchange="handleUpload('tray',this)"/>
+          </div>
+          <div class="img-slot">
+            <div class="img-slot-label">
+              <span>② patient position</span>
+              <button onclick="triggerUpload('position')">upload</button>
+            </div>
+            <div class="img-preview" id="prev-position"><div class="img-placeholder">built-in SVG illustration<br>(click upload to replace)</div></div>
+            <input type="file" class="img-upload" id="upload-position" accept="image/*" onchange="handleUpload('position',this)"/>
+          </div>
+          <div class="img-slot">
+            <div class="img-slot-label">
+              <span>③ ultrasound view</span>
+              <button onclick="triggerUpload('us')">upload</button>
+            </div>
+            <div class="img-preview" id="prev-us"><div class="img-placeholder">built-in SVG illustration<br>(click upload to replace)</div></div>
+            <input type="file" class="img-upload" id="upload-us" accept="image/*" onchange="handleUpload('us',this)"/>
+          </div>
+          <div class="img-slot">
+            <div class="img-slot-label">
+              <span>④ CXR / pneumothorax</span>
+              <button onclick="triggerUpload('cxr')">upload</button>
+            </div>
+            <div class="img-preview" id="prev-cxr"><div class="img-placeholder">built-in SVG illustration<br>(click upload to replace)</div></div>
+            <input type="file" class="img-upload" id="upload-cxr" accept="image/*" onchange="handleUpload('cxr',this)"/>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:.8rem">Accepted: JPG, PNG, GIF, WEBP. Images are embedded in memory for this session only — they are not saved between browser sessions. To make them permanent, use the Base64 embed method described in the documentation.</p>
+      </div>
+      <div class="mc-section">
+        <label>Image captions (shown below each image in the game)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+          <div><label style="font-size:10px;color:var(--accent)">Tray caption</label><textarea id="cap-tray" style="width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;padding:.4rem;min-height:40px;resize:none">FIGURE 1 — STERILE PROCEDURAL TRAY · central line kit components</textarea></div>
+          <div><label style="font-size:10px;color:var(--accent)">Position caption</label><textarea id="cap-position" style="width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;padding:.4rem;min-height:40px;resize:none">FIGURE 2 — PATIENT POSITIONING · Trendelenburg, head rotated left</textarea></div>
+          <div><label style="font-size:10px;color:var(--accent)">Ultrasound caption</label><textarea id="cap-us" style="width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;padding:.4rem;min-height:40px;resize:none">FIGURE 3 — ULTRASOUND VIEW · IJV vs carotid · short-axis</textarea></div>
+          <div><label style="font-size:10px;color:var(--accent)">CXR caption</label><textarea id="cap-cxr" style="width:100%;background:#0a0a0a;border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:11px;padding:.4rem;min-height:40px;resize:none">FIGURE 4 — CHEST X-RAY · right apical pneumothorax · CVC tip at cavoatrial junction</textarea></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /mc-panel -->
+
+  <div class="mc-footer">
+    <div>
+      <button class="reset-btn" onclick="resetDefaults()">reset to defaults</button>
+    </div>
+    <div class="hint">all changes apply immediately on launch</div>
+    <button class="launch" onclick="launchGame()">▶ launch game</button>
+  </div>
+</div><!-- /mc -->
+
+<!-- ════════════════════════════════════════════
+     GAME
+════════════════════════════════════════════ -->
+<button id="back-btn" style="display:none" onclick="returnToMC()">← mission control</button>
+
+<div id="game">
+  <div id="g-header">central line insertion · ultrasound-guided · right internal jugular</div>
+  <div id="level-bar">
+    <span class="lvl-dot" id="dot1">● LEVEL 1: GUIDED</span>
+    <span class="lvl-dot" id="dot2">● LEVEL 2: PROMPTED</span>
+    <span class="lvl-dot" id="dot3">● LEVEL 3: INDEPENDENT</span>
+  </div>
+  <div id="log"></div>
+  <div id="scene"></div>
+  <div id="actions"></div>
+  <div id="score-bar"></div>
+  <div id="certificate">
+    <h1>Certificate of Completion</h1>
+    <p>This certifies that</p>
+    <div class="cert-name" id="cert-name">—</div>
+    <p>has successfully completed all three levels of</p>
+    <p><strong>The Procedure Room</strong></p>
+    <p style="font-size:12px;margin-top:.3rem">Ultrasound-Guided Central Venous Catheter Insertion<br>Right Internal Jugular · Seldinger Technique</p>
+    <div class="stamp">✓ Guided · ✓ Prompted · ✓ Independent</div>
+    <div class="sim-invite">
+      You are now invited to complete your training in person.<br>
+      <strong>Report to the Simulation Lab</strong> to perform this procedure<br>
+      on a high-fidelity mannequin under faculty supervision.<br><br>
+      Present this certificate to the Sim Lab coordinator<br>
+      to book your session.
+    </div>
+    <p style="font-size:11px;margin-top:1.5rem;color:var(--muted)">Issued: <span id="cert-date"></span></p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SVG ILLUSTRATIONS (inline templates)
+════════════════════════════════════════════ -->
+<div id="svg-store" style="display:none">
+
+<div id="svg-tray">
+<svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="drape-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0d2035"/><stop offset="100%" stop-color="#091525"/></linearGradient><linearGradient id="cath-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3a5a8a"/><stop offset="100%" stop-color="#1e3560"/></linearGradient><clipPath id="tray-clip"><rect x="30" y="20" width="620" height="270" rx="12"/></clipPath></defs>
+<rect x="30" y="20" width="620" height="270" rx="12" fill="#1c2a1c" stroke="#2a3a2a" stroke-width="1.5"/>
+<rect x="30" y="20" width="620" height="270" rx="12" fill="url(#drape-g)" opacity=".85"/>
+<rect x="38" y="28" width="604" height="254" rx="8" fill="none" stroke="#1a3555" stroke-width=".5" opacity=".6"/>
+<line x1="38" y1="44" x2="642" y2="44" stroke="#1a3555" stroke-width=".4" opacity=".4"/>
+<rect x="55" y="65" width="155" height="22" rx="10" fill="url(#cath-g)" stroke="#4a7aaa" stroke-width=".8"/>
+<rect x="55" y="69" width="155" height="6" rx="3" fill="#5a8abb" opacity=".3"/>
+<rect x="55" y="70" width="28" height="18" rx="8" fill="#162845" stroke="#3a6a9a" stroke-width=".6"/>
+<rect x="63" y="72" width="10" height="14" rx="5" fill="#1a3a5a" stroke="#4a7aaa" stroke-width=".5"/>
+<rect x="72" y="72" width="10" height="14" rx="5" fill="#1a3a5a" stroke="#4a8aaa" stroke-width=".5" opacity=".9"/>
+<rect x="81" y="73" width="8" height="12" rx="4" fill="#1a3a5a" stroke="#4a9aaa" stroke-width=".5" opacity=".8"/>
+<text font-family="Courier New" font-size="9" fill="#7aaadd" x="212" y="80" text-anchor="end">triple-lumen CVC 7F</text>
+<circle cx="97" cy="130" r="26" fill="none" stroke="#9ab8c8" stroke-width="1.8" stroke-dasharray="4 2.5"/>
+<circle cx="97" cy="130" r="17" fill="none" stroke="#7a9ab0" stroke-width="1.2" stroke-dasharray="3 2"/>
+<circle cx="97" cy="130" r="9" fill="none" stroke="#5a7a90" stroke-width=".8" stroke-dasharray="2 2"/>
+<line x1="97" y1="104" x2="97" y2="90" stroke="#9ab8c8" stroke-width="1.4" stroke-linecap="round"/>
+<text font-family="Courier New" font-size="9" fill="#8ab8c8" x="130" y="128">J-tipped guidewire</text>
+<text font-family="Courier New" font-size="8" fill="#5a8898" x="130" y="140">nitinol, 0.035 in</text>
+<rect x="55" y="175" width="82" height="13" rx="6" fill="#2a3848" stroke="#5a7888" stroke-width=".7"/>
+<rect x="55" y="176" width="16" height="11" rx="4" fill="#1a2838" stroke="#4a6878" stroke-width=".5"/>
+<rect x="128" y="177" width="12" height="9" rx="3" fill="#3a5268"/>
+<line x1="137" y1="182" x2="158" y2="182" stroke="#c8ccd0" stroke-width="1.6" stroke-linecap="round"/>
+<polygon points="158,182 154,179.5 154,184.5" fill="#b0b8c0"/>
+<text font-family="Courier New" font-size="9" fill="#7a9ab0" x="165" y="186">finder needle 18G</text>
+<rect x="55" y="205" width="75" height="12" rx="5" fill="#3a2838" stroke="#7a5868" stroke-width=".7"/>
+<rect x="122" y="206" width="18" height="10" rx="2" fill="#4a3048" stroke="#8a6878" stroke-width=".4"/>
+<line x1="140" y1="211" x2="158" y2="211" stroke="#b08898" stroke-width="2" stroke-linecap="round"/>
+<polygon points="158,211 153,208.5 153,213.5" fill="#a07888"/>
+<text font-family="Courier New" font-size="9" fill="#aa8898" x="165" y="215">dilator 7F</text>
+<rect x="240" y="65" width="58" height="36" rx="4" fill="#1a2c1a" stroke="#3a5a3a" stroke-width=".7"/>
+<rect x="244" y="69" width="50" height="28" rx="3" fill="#0f200f"/>
+<rect x="246" y="71" width="46" height="8" rx="2" fill="#2a4a2a"/>
+<text font-family="Courier New" font-size="7" fill="#6aaa6a" x="269" y="79" text-anchor="middle">CHX</text>
+<text font-family="Courier New" font-size="7" fill="#4a7a4a" x="269" y="89" text-anchor="middle">2% swabs</text>
+<rect x="240" y="118" width="110" height="15" rx="7" fill="#1e2030" stroke="#4a4a70" stroke-width=".7"/>
+<rect x="240" y="119" width="18" height="13" rx="5" fill="#141825" stroke="#3a3a58" stroke-width=".5"/>
+<rect x="348" y="120" width="14" height="11" rx="3" fill="#2a2a48" stroke="#5a5a80" stroke-width=".5"/>
+<text font-family="Courier New" font-size="9" fill="#7a7aa8" x="269" y="145">10 mL syringe</text>
+<rect x="240" y="165" width="80" height="30" rx="3" fill="#0c1a2c" stroke="#1a3a5a" stroke-width=".7"/>
+<line x1="240" y1="175" x2="320" y2="175" stroke="#1a3555" stroke-width=".6"/>
+<line x1="240" y1="182" x2="320" y2="182" stroke="#1a3555" stroke-width=".5"/>
+<text font-family="Courier New" font-size="9" fill="#4a7aaa" x="280" y="210" text-anchor="middle">sterile drapes</text>
+<rect x="350" y="65" width="26" height="36" rx="5" fill="#0e1c28" stroke="#2a4a6a" stroke-width=".7"/>
+<rect x="356" y="58" width="14" height="10" rx="3" fill="#0a1820" stroke="#2a4a5a" stroke-width=".5"/>
+<text font-family="Courier New" font-size="7" fill="#4a7a9a" x="363" y="82" text-anchor="middle">NS</text>
+<rect x="385" y="65" width="26" height="36" rx="5" fill="#0e1c28" stroke="#2a4a6a" stroke-width=".7"/>
+<rect x="391" y="58" width="14" height="10" rx="3" fill="#0a1820" stroke="#2a4a5a" stroke-width=".5"/>
+<text font-family="Courier New" font-size="9" fill="#4a7aaa" x="380" y="118" text-anchor="middle">saline flushes</text>
+<rect x="350" y="135" width="22" height="50" rx="4" fill="#141e14" stroke="#2a4a2a" stroke-width=".7"/>
+<rect x="354" y="128" width="14" height="10" rx="3" fill="#0e180e" stroke="#2a3a2a" stroke-width=".5"/>
+<text font-family="Courier New" font-size="7" fill="#4a7a4a" x="361" y="155" text-anchor="middle">LA</text>
+<text font-family="Courier New" font-size="9" fill="#4a7a6a" x="361" y="200" text-anchor="middle">lidocaine</text>
+<rect x="430" y="65" width="100" height="8" rx="2" fill="#252525" stroke="#484848" stroke-width=".6"/>
+<polygon points="430,65 445,65 445,73 430,73 422,69" fill="#1a1a1a" stroke="#404040" stroke-width=".5"/>
+<text font-family="Courier New" font-size="9" fill="#6a6a6a" x="480" y="90" text-anchor="middle">scalpel no.11</text>
+<rect x="430" y="108" width="50" height="28" rx="3" fill="#1c1a10" stroke="#4a4228" stroke-width=".7"/>
+<text font-family="Courier New" font-size="7" fill="#8a7a48" x="455" y="122" text-anchor="middle">suture</text>
+<text font-family="Courier New" font-size="7" fill="#6a5a38" x="455" y="131" text-anchor="middle">2-0 silk</text>
+<rect x="500" y="108" width="55" height="28" rx="4" fill="#1e1a10" stroke="#4a4030" stroke-width=".7"/>
+<text font-family="Courier New" font-size="7" fill="#8a7a50" x="527" y="122" text-anchor="middle">sterile gloves</text>
+<text font-family="Courier New" font-size="7" fill="#6a6040" x="527" y="131" text-anchor="middle">size 7.5</text>
+<rect x="430" y="155" width="125" height="28" rx="3" fill="#0c1a2a" stroke="#1a3a5a" stroke-width=".6" opacity=".8"/>
+<text font-family="Courier New" font-size="9" fill="#4a6a8a" x="492" y="172" text-anchor="middle">transparent dressing</text>
+<rect x="30" y="272" width="620" height="18" rx="0" fill="#070e07" opacity=".7"/>
+<text font-family="Courier New" font-size="9" fill="#3a5a78" x="340" y="284" text-anchor="middle" letter-spacing="1.5">sterile central line kit — all components verified before procedure</text>
+</svg>
+</div>
+
+<div id="svg-position">
+<svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="pos-skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4926a"/><stop offset="100%" stop-color="#a87858"/></linearGradient></defs>
+<rect x="40" y="148" width="480" height="14" rx="4" fill="#1e1e1c" stroke="#3a3a38" stroke-width=".7"/>
+<rect x="40" y="130" width="480" height="22" rx="3" fill="#2a2a28" stroke="#3a3a38" stroke-width=".5"/>
+<rect x="120" y="108" width="260" height="42" rx="8" fill="#2a2018" stroke="#4a3a28" stroke-width=".7"/>
+<rect x="365" y="112" width="30" height="32" rx="6" fill="#2a1e16" stroke="#4a3a28" stroke-width=".7"/>
+<ellipse cx="420" cy="122" rx="32" ry="26" fill="#2a1e16" stroke="#4a3a28" stroke-width=".7"/>
+<path d="M415 140 Q408 148 400 146" fill="none" stroke="#5a4a38" stroke-width=".8"/>
+<line x1="408" y1="117" x2="420" y2="116" stroke="#5a4a38" stroke-width="1.2" stroke-linecap="round"/>
+<line x1="425" y1="116" x2="435" y2="117" stroke="#5a4a38" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M378 112 Q385 118 388 148" fill="none" stroke="#7a6a58" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+<path d="M385 120 L395 148 L378 148 Z" fill="none" stroke="#6aaa7a" stroke-width=".8" stroke-dasharray="2 2"/>
+<text font-family="Courier New" font-size="9" fill="#6aaa7a" x="404" y="142">IJ target zone</text>
+<path d="M 80 148 A 40 40 0 0 1 118 135" fill="none" stroke="#6a9abb" stroke-width="1" stroke-dasharray="3 2"/>
+<text font-family="Courier New" font-size="9" fill="#6a9abb" x="52" y="134">15°</text>
+<rect x="40" y="130" width="90" height="22" rx="5" fill="#222" stroke="#333" stroke-width=".5" opacity=".6"/>
+<line x1="392" y1="109" x2="392" y2="76" stroke="#4a4a48" stroke-width=".5" stroke-dasharray="2 2"/>
+<text font-family="Courier New" font-size="9" fill="#8a8478" x="394" y="72">head turned left ~45°</text>
+<line x1="130" y1="148" x2="80" y2="175" stroke="#4a4a48" stroke-width=".5" stroke-dasharray="2 2"/>
+<text font-family="Courier New" font-size="9" fill="#6a9abb" x="42" y="188">Trendelenburg</text>
+<text font-family="Courier New" font-size="9" fill="#6a9abb" x="42" y="200">head 15° down</text>
+<text font-family="Courier New" font-size="10" fill="#4a4a48" x="280" y="228" text-anchor="middle" letter-spacing="1">patient positioning for right IJ access</text>
+</svg>
+</div>
+
+<div id="svg-us">
+<svg viewBox="0 0 680 370" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="us-bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020b05"/><stop offset="100%" stop-color="#010804"/></linearGradient><radialGradient id="vein-l2" cx="40%" cy="40%"><stop offset="0%" stop-color="#030a06"/><stop offset="100%" stop-color="#010402"/></radialGradient><clipPath id="us-sc2"><rect x="42" y="28" width="380" height="310" rx="4"/></clipPath></defs>
+<rect x="20" y="10" width="450" height="350" rx="10" fill="#141414" stroke="#252525" stroke-width="1.5"/>
+<rect x="42" y="28" width="380" height="310" rx="4" fill="url(#us-bg2)"/>
+<path d="M82,28 L42,338 L422,338 L382,28 Z" fill="#010f06" clip-path="url(#us-sc2)"/>
+<rect x="42" y="50" width="380" height="5" fill="#8a9888" opacity=".9"/>
+<rect x="42" y="55" width="380" height="20" fill="#1a2218" opacity=".9"/>
+<ellipse cx="182" cy="135" rx="108" ry="55" fill="#2a3228" stroke="#3a4238" stroke-width=".5"/>
+<line x1="140" y1="88" x2="125" y2="185" stroke="#4a5848" stroke-width=".6" opacity=".3"/>
+<line x1="165" y1="83" x2="155" y2="188" stroke="#4a5848" stroke-width=".6" opacity=".3"/>
+<line x1="195" y1="82" x2="185" y2="185" stroke="#4a5848" stroke-width=".6" opacity=".3"/>
+<line x1="222" y1="83" x2="215" y2="185" stroke="#4a5848" stroke-width=".6" opacity=".3"/>
+<text font-family="Courier New" font-size="9" fill="#5a6a58" x="182" y="110" text-anchor="middle">SCM</text>
+<ellipse cx="200" cy="220" rx="105" ry="80" fill="none" stroke="#4a4838" stroke-width=".6" stroke-dasharray="3 2" opacity=".6"/>
+<ellipse cx="162" cy="220" rx="55" ry="44" fill="#1a2818" stroke="#5a7858" stroke-width="1.8"/>
+<ellipse cx="162" cy="220" rx="50" ry="39" fill="url(#vein-l2)"/>
+<ellipse cx="162" cy="255" rx="50" ry="8" fill="#2a4028" opacity=".6"/>
+<ellipse cx="162" cy="220" rx="55" ry="44" fill="none" stroke="#7aaa88" stroke-width=".6" opacity=".5"/>
+<text font-family="Courier New" font-size="10" fill="#5a9870" x="162" y="218" text-anchor="middle" font-weight="bold">IJV</text>
+<text font-family="Courier New" font-size="7" fill="#3a6848" x="162" y="230" text-anchor="middle">anechoic</text>
+<ellipse cx="278" cy="225" rx="36" ry="35" fill="#1a2818" stroke="#aa4040" stroke-width="2.2"/>
+<ellipse cx="278" cy="225" rx="24" ry="23" fill="url(#vein-l2)"/>
+<ellipse cx="278" cy="225" rx="40" ry="39" fill="none" stroke="#cc4040" stroke-width=".5" opacity=".2" stroke-dasharray="2 2"/>
+<text font-family="Courier New" font-size="10" fill="#dd5050" x="278" y="223" text-anchor="middle" font-weight="bold">CCA</text>
+<text font-family="Courier New" font-size="7" fill="#aa3a3a" x="278" y="235" text-anchor="middle">pulsatile</text>
+<circle cx="233" cy="210" r="6" fill="#1a2018" stroke="#4a5838" stroke-width=".8"/>
+<line x1="162" y1="35" x2="162" y2="178" stroke="#e8e888" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6 3"/>
+<circle cx="162" cy="178" r="5" fill="#f0f088" opacity=".95"/>
+<circle cx="162" cy="178" r="9" fill="none" stroke="#e8e840" stroke-width=".8" opacity=".5"/>
+<line x1="148" y1="186" x2="176" y2="186" stroke="#c8c840" stroke-width=".6" opacity=".5"/>
+<g font-family="Courier New" font-size="8" fill="#2a5a3a"><text x="46" y="80">1</text><text x="46" y="130">2</text><text x="46" y="180">3</text><text x="46" y="230">4</text><text x="46" y="280">5 cm</text></g>
+<circle cx="52" cy="44" r="4" fill="#e0e000" opacity=".9"/>
+<text font-family="Courier New" font-size="7" fill="#c0c000" x="60" y="47">R</text>
+<text font-family="Courier New" font-size="9" fill="#1a5a2a" x="380" y="44" text-anchor="end">GAIN 58</text>
+<text font-family="Courier New" font-size="9" fill="#1a5a2a" x="380" y="56" text-anchor="end">FREQ 10MHz</text>
+<text font-family="Courier New" font-size="8" fill="#1a4a28" x="44" y="336">RT NECK TRANS</text>
+<rect x="442" y="28" width="225" height="310" rx="4" fill="#0a0a0a" stroke="#1a1a18" stroke-width=".5"/>
+<g font-family="Courier New"><text font-size="9" fill="#5a9870" x="447" y="100">IJV — internal jugular vein</text><text font-size="8" fill="#3a6850" x="447" y="112">· large, thin wall, compressible</text><text font-size="8" fill="#3a6850" x="447" y="122">· anechoic lumen</text><text font-size="8" fill="#3a6850" x="447" y="132">· non-pulsatile</text><text font-size="9" fill="#dd5050" x="447" y="158">CCA — carotid artery</text><text font-size="8" fill="#aa3838" x="447" y="170">· smaller, thick echogenic wall</text><text font-size="8" fill="#aa3838" x="447" y="180">· non-compressible</text><text font-size="8" fill="#aa3838" x="447" y="190">· pulsatile</text><text font-size="9" fill="#dddd66" x="447" y="215">Needle tip</text><text font-size="8" fill="#aaaa44" x="447" y="227">· bright hyperechoic dot</text><text font-size="8" fill="#aaaa44" x="447" y="237">· reverberation artefact</text><text font-size="8" fill="#2a4a38" x="447" y="290">linear probe 10–15 MHz</text><text font-size="8" fill="#2a4a38" x="447" y="302">short axis (transverse)</text></g>
+<rect x="20" y="345" width="640" height="18" rx="3" fill="#080808"/>
+<text font-family="Courier New" font-size="9" fill="#2a5a3a" x="340" y="357" text-anchor="middle">right neck · short-axis · IJV anterolateral to CCA · needle tip visible</text>
+</svg>
+</div>
+
+<div id="svg-cxr">
+<svg viewBox="0 0 680 480" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="lung-l2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a2218"/><stop offset="100%" stop-color="#080e08"/></linearGradient><clipPath id="film-cl"><rect x="18" y="12" width="500" height="455" rx="4"/></clipPath></defs>
+<rect x="18" y="12" width="500" height="455" rx="4" fill="#040404" stroke="#181818" stroke-width="1.5"/>
+<path d="M80 100 Q140 88 190 95 Q220 98 235 110" fill="none" stroke="#8a9898" stroke-width="3" stroke-linecap="round"/>
+<path d="M340 110 Q375 98 420 95 Q460 90 500 98" fill="none" stroke="#8a9898" stroke-width="3" stroke-linecap="round"/>
+<path d="M90 115 Q70 150 75 190" fill="none" stroke="#4a5858" stroke-width="1.5" opacity=".8"/>
+<path d="M95 140 Q72 178 78 220" fill="none" stroke="#4a5858" stroke-width="1.4" opacity=".7"/>
+<path d="M98 165 Q74 205 80 248" fill="none" stroke="#4a5858" stroke-width="1.3" opacity=".65"/>
+<path d="M100 192 Q76 234 82 276" fill="none" stroke="#4a5858" stroke-width="1.2" opacity=".6"/>
+<path d="M430 115 Q452 150 448 190" fill="none" stroke="#4a5858" stroke-width="1.5" opacity=".8"/>
+<path d="M425 140 Q450 178 444 220" fill="none" stroke="#4a5858" stroke-width="1.4" opacity=".7"/>
+<path d="M422 165 Q448 205 442 248" fill="none" stroke="#4a5858" stroke-width="1.3" opacity=".65"/>
+<rect x="261" y="60" width="36" height="340" rx="4" fill="#282820" stroke="#3a3a30" stroke-width=".5" opacity=".9"/>
+<rect x="272" y="60" width="14" height="90" rx="6" fill="#0a1008" stroke="#2a3828" stroke-width=".7"/>
+<path d="M297 100 Q368 92 410 160 Q418 200 395 365 Q370 385 295 360 Q280 330 282 270 Q280 150 297 100 Z" fill="url(#lung-l2)" stroke="#1a2818" stroke-width=".5"/>
+<line x1="320" y1="115" x2="370" y2="210" stroke="#2a3a28" stroke-width="1.2" opacity=".7"/>
+<line x1="315" y1="120" x2="310" y2="240" stroke="#2a3a28" stroke-width="1.0" opacity=".65"/>
+<line x1="360" y1="118" x2="390" y2="280" stroke="#2a3a28" stroke-width=".8" opacity=".55"/>
+<line x1="295" y1="180" x2="380" y2="175" stroke="#2a3a28" stroke-width=".8" opacity=".5"/>
+<line x1="292" y1="220" x2="408" y2="218" stroke="#2a3a28" stroke-width=".7" opacity=".45"/>
+<path d="M76 170 Q218 150 255 270 Q253 330 190 388 Q130 375 82 320 Q70 205 76 170 Z" fill="url(#lung-l2)" stroke="#1a2818" stroke-width=".5"/>
+<line x1="130" y1="155" x2="100" y2="240" stroke="#2a3a28" stroke-width=".9" opacity=".65"/>
+<line x1="155" y1="148" x2="145" y2="270" stroke="#2a3a28" stroke-width=".8" opacity=".6"/>
+<line x1="78" y1="220" x2="252" y2="218" stroke="#2a3a28" stroke-width=".7" opacity=".45"/>
+<path d="M76 100 Q148 86 218 115 Q230 130 222 148 Q200 155 175 148 Q120 142 82 150 Q72 120 76 100 Z" fill="#030706"/>
+<path d="M105 92 Q158 88 205 108 Q220 122 222 148 Q218 162 212 168" fill="none" stroke="#c8d8c0" stroke-width="2" stroke-linecap="round"/>
+<path d="M222 210 Q215 185 270 172 Q322 185 318 210 Q270 278 222 210 Z" fill="#1a1a14" stroke="#2a2a20" stroke-width=".8"/>
+<path d="M330 72 Q322 115 310 128 Q292 170 284 222" fill="none" stroke="#e8e870" stroke-width="2" stroke-linecap="round"/>
+<circle cx="284" cy="224" r="5" fill="#e8e850" opacity=".9"/>
+<circle cx="284" cy="224" r="8" fill="none" stroke="#e8e850" stroke-width=".8" opacity=".5"/>
+<path d="M76 380 Q260 368 297 372 Q390 368 430 376" fill="none" stroke="#5a6858" stroke-width="2" stroke-linecap="round"/>
+<text font-family="Courier New" font-size="10" fill="#282818" x="28" y="34">AP PORTABLE</text>
+<text font-family="Courier New" font-size="11" fill="#303028" x="440" y="34" text-anchor="end">L</text>
+<text font-family="Courier New" font-size="9" fill="#1a1a18" x="28" y="458">MOREAU R. · ICU BED 4</text>
+<rect x="528" y="12" width="140" height="455" rx="4" fill="#060606" stroke="#141414" stroke-width=".5"/>
+<line x1="140" y1="118" x2="528" y2="80" stroke="#aa6a6a" stroke-width=".7" stroke-dasharray="3 2"/>
+<circle cx="140" cy="118" r="3" fill="#aa6a6a"/>
+<text font-family="Courier New" font-size="9" fill="#cc7a7a" x="532" y="64">pneumothorax</text>
+<text font-family="Courier New" font-size="8" fill="#9a5a5a" x="532" y="75">right apex</text>
+<line x1="185" y1="104" x2="528" y2="118" stroke="#9ab898" stroke-width=".7" stroke-dasharray="3 2"/>
+<circle cx="185" cy="104" r="3" fill="#9ab898"/>
+<text font-family="Courier New" font-size="9" fill="#aacaa8" x="532" y="115">visceral pleural</text>
+<text font-family="Courier New" font-size="8" fill="#7a9a78" x="532" y="126">line</text>
+<line x1="284" y1="224" x2="528" y2="185" stroke="#dddd66" stroke-width=".7" stroke-dasharray="3 2"/>
+<circle cx="284" cy="224" r="3" fill="#dddd66"/>
+<text font-family="Courier New" font-size="9" fill="#dddd66" x="532" y="181">CVC tip</text>
+<text font-family="Courier New" font-size="8" fill="#aaaa44" x="532" y="192">cavoatrial jxn</text>
+<line x1="370" y1="200" x2="528" y2="310" stroke="#3a6848" stroke-width=".7" stroke-dasharray="3 2"/>
+<text font-family="Courier New" font-size="9" fill="#5a8860" x="532" y="307">left lung</text>
+<text font-family="Courier New" font-size="8" fill="#3a6840" x="532" y="318">normal markings</text>
+<rect x="532" y="400" width="130" height="55" rx="4" fill="#1a0808" stroke="#4a1818" stroke-width=".7"/>
+<text font-family="Courier New" font-size="8" fill="#cc6060" x="597" y="414" text-anchor="middle">KEY FINDING</text>
+<text font-family="Courier New" font-size="8" fill="#aa4040" x="597" y="426" text-anchor="middle">right PTX — small</text>
+<text font-family="Courier New" font-size="8" fill="#aa4040" x="597" y="437" text-anchor="middle">visceral pleural</text>
+<text font-family="Courier New" font-size="8" fill="#aa4040" x="597" y="448" text-anchor="middle">line visible</text>
+<rect x="18" y="454" width="502" height="18" rx="0" fill="#030303"/>
+<text font-family="Courier New" font-size="9" fill="#2a4838" x="269" y="466" text-anchor="middle">post-procedure CXR · right apical pneumothorax · CVC tip at cavoatrial junction</text>
+</svg>
+</div>
+
+</div><!-- /svg-store -->
+
+<!-- ════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════ -->
+<script>
+// ─── CONFIG STATE ────────────────────────────────────────────────────────────
+let CFG = {
+  speed: 0,
+  delay: 50,
+  images: { tray:null, position:null, us:null, cxr:null },
+  captions: { tray:'', position:'', us:'', cxr:'' },
+  l1scenes: null,  // populated from defaults
+  l2questions: null,
+  l3questions: null,
+};
+
+// ─── DEFAULT TEXT DATA ────────────────────────────────────────────────────────
+const DEFAULT_L1 = [
+  { id:'intro',    label:'Intro',           lines:['The room is dark.','A monitor blinks. A patient breathes.','You are here. You don\'t know why yet.'] },
+  { id:'lookat',   label:'Look around',     lines:['The overhead light hums to life.','A procedural tray sits covered in blue drape. An ultrasound machine waits in the corner.','The patient is a 58-year-old man. His IV access failed twice tonight. His blood pressure is trending down.','A voice, quiet, from beside the door:','[sup]"He needs a central line. You\'ve read about this. Now you\'ll do it."'] },
+  { id:'patient',  label:'Check patient',   lines:['He is supine. Wristband reads: R. MOREAU.','Sepsis protocol initiated. No bleeding disorder. No prior neck surgery.','Right internal jugular vein is your target.','[sup]"Trendelenburg. Head turned left. It distends the vein."'] },
+  { id:'tray',     label:'Examine tray',    lines:['You lift the drape.','Central line kit. Chlorhexidine swabs. Sterile drapes. 10 mL syringe. Finder needle. J-tipped guidewire. Dilator. Triple-lumen catheter, 7 French.','[sup]"Name the steps before you touch anything."'], graphic:'tray' },
+  { id:'position', label:'Position patient',lines:['Bed down fifteen degrees. Head turned left.','The sternocleidomastoid triangle comes into view.','[sup]"The vein is medial to the carotid. Don\'t forget that."'], graphic:'position' },
+  { id:'prep',     label:'Prep and drape',  lines:['Chlorhexidine in wide circles. Thirty seconds to dry.','Sterile drapes. Only the neck is exposed.','You are scrubbed in. The world outside the drape no longer exists.'] },
+  { id:'us',       label:'Ultrasound',      lines:['The screen wakes. Gray and black. A cross-section of the neck.','Two circles. The vein: larger, soft-walled, compressible. The artery: smaller, pulsing, bright.','You press gently. The vein collapses. The artery does not.','[sup]"Good. You found it. Mark your entry point."'], graphic:'us' },
+  { id:'needle',   label:'Advance needle',  lines:['Finder needle. Bevel up. Forty-five degrees toward the ipsilateral nipple.','The needle tip — a bright dot — moves toward the vessel.','You aspirate.','Dark, non-pulsatile blood fills the syringe.','Venous blood. You are in.','[sup]"Don\'t move the needle. Not even a millimeter."'] },
+  { id:'wire',     label:'Guidewire',       lines:['The J-tipped wire feeds through. Smooth. No resistance.','You watch the monitor. Rhythm unchanged.','[sup]"If you see ectopy, pull back slightly."','Needle removed. Wire in place.'] },
+  { id:'dilate',   label:'Dilate',          lines:['Small nick at the skin entry. Dilator over wire. Resistance — a twist — it gives.','Dilator removed. Wire still in sight.','[sup]"The wire must never disappear into the patient. Never."'] },
+  { id:'catheter', label:'Catheter',        lines:['Catheter over wire to fifteen centimeters. Wire removed.','Blood aspirates freely from every lumen. Flushed.','Sutured. Sterile dressing applied.'] },
+  { id:'confirm',  label:'Confirm',         lines:['Chest X-ray ordered.','Catheter tip at the cavoatrial junction. No pneumothorax. No hemothorax.','Pressure stabilizing. Vasopressors running.','[sup]"Good. Document it."','Level 1 complete.'], graphic:'cxr' },
+  { id:'recite',   label:'Recite steps',    lines:['Position. Landmark. Prep and drape. Ultrasound. Access. Wire. Dilate. Catheter. Confirm.','[sup]"Seldinger technique. Don\'t rush the wire."'] },
+];
+
+const DEFAULT_L2 = [
+  { q:'Select the items you need for this procedure.', type:'checklist' },
+  { q:'Before inserting the needle, how do you position the patient?', opts:['Supine, head midline, bed flat','Trendelenburg, head turned left','Reverse Trendelenburg, head turned right','Semi-recumbent, head midline'], correct:1, wrongLines:['The neck veins are flat. The angle is wrong.','You advance the needle. Nothing aspirates.','[sup]"Stop. Reposition. Trendelenburg. Head left. Always."'], mgmt:'reposition correctly', graphic:'position' },
+  { q:'On ultrasound, how do you confirm which structure is the internal jugular vein?', opts:['The brighter, pulsatile structure','The larger, compressible, non-pulsatile structure','The deeper of the two','The one medial to the sternocleidomastoid'], correct:1, wrongLines:['You compress. It does not collapse. Pulsatile. Bright. You have the carotid.','[sup]"The vein compresses. The artery does not. The most important distinction in this room."'], mgmt:'recheck and proceed', graphic:'us' },
+  { q:'What is the correct needle angle and direction for right IJ access?', opts:['90° perpendicular to the skin','30° toward the contralateral shoulder','45° toward the ipsilateral nipple','60° toward the chin'], correct:2, wrongLines:['The needle goes deep. No flash. You redirect. The blood is bright. Pulsatile. Arterial puncture.','Withdraw. Firm pressure. Wait.','[sup]"45 degrees. Toward the ipsilateral nipple. The angle keeps you out of the artery."'], mgmt:'apply pressure and retry' },
+  { q:'Dark, non-pulsatile blood fills the syringe. What do you do next?', opts:['Arterial placement — withdraw immediately','Venous placement — advance the guidewire now','Venous placement — remove the needle and recheck','Uncertain — send blood gas to confirm'], correct:1, wrongLines:['You withdraw. The access is lost. The patient\'s pressure ticks down.','[sup]"Dark and non-pulsatile is venous. Hold the needle. The wire goes in next. You do not move."'], mgmt:'regain access and continue' },
+  { q:'The wire is advancing. Three consecutive PVCs appear on the monitor. What do you do?', opts:['Pull the wire back slightly and wait','Advance further to pass the ectopic focus','Remove the wire entirely and start over','Ignore it — PVCs are expected'], correct:0, wrongLines:['You advance. PVCs become a run of VT. The monitor alarms.','You pull the wire back. Rhythm recovers.','[sup]"Wire in the right atrium causes ectopy. Pull back. Never push through arrhythmia."'], mgmt:'stabilize and continue' },
+  { q:'Post-procedure CXR shows a small apical lucency on the right. What is this and what do you do?', opts:['Normal post-procedure finding — no action needed','Pneumothorax — O₂, monitor closely, chest tube if >2 cm or symptomatic','Hemothorax — start IV fluids','Air embolism — Trendelenburg left lateral decubitus'], correct:1, wrongLines:['You sign the note and leave. An hour later, Moreau\'s O₂ is 84%.','Emergency chest tube placed by the senior resident.','[sup]"Any lucency after a central line is a pneumothorax until proven otherwise."'], mgmt:'manage the pneumothorax', graphic:'cxr' },
+];
+
+const DEFAULT_L3 = [
+  { q:'Which of these is NOT a valid indication for a central venous catheter?', opts:['Vasopressor infusion','CVP monitoring','Routine blood draws in a stable patient with good peripheral access','Rapid volume resuscitation'], correct:2, wrongLines:['Central lines carry real risk: infection, thrombosis, pneumothorax.','Inserting one when good peripheral access exists exposes the patient to unnecessary harm.'], mgmt:'reconsider and proceed' },
+  { q:'Which finding most concerns you as a relative contraindication to the right IJ approach?', opts:['History of right-sided pneumothorax, now resolved','Prior right neck surgery with possible scarring','Patient on aspirin','BMI of 32'], correct:1, wrongLines:['Scarring distorts anatomy. The needle hits fibrous tissue. Multiple passes. A hematoma forms.','Consider the contralateral side or femoral approach when anatomy is compromised.'], mgmt:'reassess and choose a safe approach' },
+  { q:'Place the procedural steps in the correct order.', type:'sequence' },
+  { q:'During dilation, bright red pulsatile blood wells up around the dilator. What do you do?', opts:['Venous ooze — apply light pressure and continue','Arterial injury — remove dilator, hold firm pressure ≥10 min, call for help','Arterial injury — place the catheter to tamponade the vessel','Normal finding — the dilator has entered the subclavian vein'], correct:1, wrongLines:['You advance the catheter. The hematoma expands rapidly. Airway is now at risk.','A dilator in the artery must be removed under direct pressure. Never place a catheter through an arterial injury.'], mgmt:'manage the arterial injury' },
+  { q:'The patient suddenly desaturates and becomes hypotensive. A churning sound is heard on auscultation. First action?', opts:['Tension pneumothorax — needle decompression immediately','Air embolism — clamp catheter, left lateral decubitus Trendelenburg, 100% O₂, call for help','Vasovagal syncope — atropine IV','PE — start heparin'], correct:1, wrongLines:['You needle the chest. No improvement. The mill-wheel murmur is pathognomonic for air embolism.','Left lateral decubitus Trendelenburg moves air away from the right ventricular outflow tract.'], mgmt:'manage the air embolism' },
+  { q:'You release the guidewire momentarily. It disappears into the patient. What do you do?', opts:['Attempt to retrieve it with your fingers','Call interventional radiology immediately for fluoroscopic retrieval','Leave it — it will pass harmlessly','Place the catheter over where you think the wire is'], correct:1, wrongLines:['A retained guidewire is a sentinel event. It can migrate to the heart, cause arrhythmia, or perforate a vessel.','Immediate escalation and fluoroscopic retrieval are mandatory.'], mgmt:'escalate appropriately' },
+  { q:'The line is placed and confirmed. What must your procedure note include?', opts:['Site, technique, number of attempts, catheter type, confirmation method, complications','Time of procedure and your name only','Verbal handoff to the nurse is sufficient','Site and catheter type only'], correct:0, wrongLines:['Incomplete documentation creates medico-legal risk and communication failures.','Every note must include: indication, consent, site, technique, attempts, findings, complications, confirmation.'], mgmt:'complete the documentation' },
+];
+
+// ─── MISSION CONTROL ─────────────────────────────────────────────────────────
+function showTab(id){
+  ['text','speed','images'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===id?'':'none';
+  });
+  document.querySelectorAll('.mc-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['text','speed','images'][i]===id);
+  });
+}
+
+function buildTextEditors(){
+  const l1 = document.getElementById('l1-editors');
+  l1.innerHTML='';
+  DEFAULT_L1.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='scene-editor';
+    d.innerHTML=`<h3>Scene ${i+1}: ${s.label}</h3>
+    <textarea id="l1s-${i}" rows="${Math.max(3,s.lines.length+1)}">${s.lines.join('\n')}</textarea>`;
+    l1.appendChild(d);
+  });
+
+  const l2=document.getElementById('l2-editors');
+  l2.innerHTML='';
+  DEFAULT_L2.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='scene-editor';
+    if(q.type==='checklist'){
+      d.innerHTML=`<h3>Q${i+1}: Equipment checklist (fixed)</h3><p style="font-size:11px;color:var(--muted)">The equipment selection question uses a fixed item list and is not editable here.</p>`;
+    } else {
+      const optsLine = q.opts ? q.opts.join(' | ') : '';
+      d.innerHTML=`<h3>Q${i+1}</h3>
+      <label style="font-size:10px;color:var(--accent)">Question</label>
+      <textarea id="l2q-${i}" rows="2">${q.q}</textarea>
+      <label style="font-size:10px;color:var(--accent);margin-top:.4rem;display:block">Options (pipe-separated) | correct index: ${q.correct}</label>
+      <textarea id="l2o-${i}" rows="3">${optsLine}\ncorrect:${q.correct}</textarea>`;
+    }
+    l2.appendChild(d);
+  });
+
+  const l3=document.getElementById('l3-editors');
+  l3.innerHTML='';
+  DEFAULT_L3.forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='scene-editor';
+    if(q.type==='sequence'){
+      d.innerHTML=`<h3>Q${i+1}: Step sequence (fixed)</h3><p style="font-size:11px;color:var(--muted)">The sequencing question uses a fixed step list and is not editable here.</p>`;
+    } else {
+      const optsLine = q.opts ? q.opts.join(' | ') : '';
+      d.innerHTML=`<h3>Q${i+1}</h3>
+      <label style="font-size:10px;color:var(--accent)">Question</label>
+      <textarea id="l3q-${i}" rows="2">${q.q}</textarea>
+      <label style="font-size:10px;color:var(--accent);margin-top:.4rem;display:block">Options (pipe-separated) | correct index: ${q.correct}</label>
+      <textarea id="l3o-${i}" rows="3">${optsLine}\ncorrect:${q.correct}</textarea>`;
+    }
+    l3.appendChild(d);
+  });
+}
+
+function updateSpeedLabel(){
+  const v=parseInt(document.getElementById('speed-slider').value);
+  document.getElementById('speed-label').textContent = v===0?'Instant (0 ms)':`${v} ms / character`;
+}
+function updateDelayLabel(){
+  const v=parseInt(document.getElementById('delay-slider').value);
+  document.getElementById('delay-label').textContent = v===0?'None (0 ms)':`${v} ms`;
+}
+
+let previewIv=null;
+function runPreview(){
+  if(previewIv) clearInterval(previewIv);
+  const speed=parseInt(document.getElementById('speed-slider').value);
+  const txt='Dark, non-pulsatile blood fills the syringe. Venous blood. You are in.';
+  const el=document.getElementById('preview-text');
+  el.textContent='';
+  let i=0;
+  if(speed===0){ el.textContent=txt; return; }
+  previewIv=setInterval(()=>{
+    i++;
+    el.textContent=txt.slice(0,i);
+    if(i>=txt.length) clearInterval(previewIv);
+  },speed);
+}
+
+function triggerUpload(key){
+  document.getElementById('upload-'+key).click();
+}
+function handleUpload(key,input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    CFG.images[key]=e.target.result;
+    const prev=document.getElementById('prev-'+key);
+    prev.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain"/>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetDefaults(){
+  if(!confirm('Reset all text and settings to defaults?')) return;
+  buildTextEditors();
+  document.getElementById('speed-slider').value=0;
+  document.getElementById('delay-slider').value=50;
+  updateSpeedLabel(); updateDelayLabel();
+  CFG.images={tray:null,position:null,us:null,cxr:null};
+  ['tray','position','us','cxr'].forEach(k=>{
+    document.getElementById('prev-'+k).innerHTML='<div class="img-placeholder">built-in SVG illustration<br>(click upload to replace)</div>';
+  });
+}
+
+function readConfig(){
+  CFG.speed=parseInt(document.getElementById('speed-slider').value);
+  CFG.delay=parseInt(document.getElementById('delay-slider').value);
+  CFG.captions={
+    tray:document.getElementById('cap-tray').value,
+    position:document.getElementById('cap-position').value,
+    us:document.getElementById('cap-us').value,
+    cxr:document.getElementById('cap-cxr').value,
+  };
+  // read edited L1 scenes
+  CFG.l1scenes = DEFAULT_L1.map((s,i)=>{
+    const ta=document.getElementById('l1s-'+i);
+    return {...s, lines: ta ? ta.value.split('\n').filter(l=>l.trim()) : s.lines};
+  });
+  // read edited L2 questions
+  CFG.l2questions = DEFAULT_L2.map((q,i)=>{
+    if(q.type==='checklist') return q;
+    const qta=document.getElementById('l2q-'+i);
+    const ota=document.getElementById('l2o-'+i);
+    if(!qta||!ota) return q;
+    const lines=ota.value.split('\n');
+    const correctLine=lines.find(l=>l.startsWith('correct:'));
+    const correct=correctLine?parseInt(correctLine.split(':')[1]):q.correct;
+    const opts=lines.filter(l=>!l.startsWith('correct:')).join('').split('|').map(o=>o.trim()).filter(Boolean);
+    return {...q, q:qta.value.trim(), opts:opts.length?opts:q.opts, correct};
+  });
+  // read edited L3 questions
+  CFG.l3questions = DEFAULT_L3.map((q,i)=>{
+    if(q.type==='sequence') return q;
+    const qta=document.getElementById('l3q-'+i);
+    const ota=document.getElementById('l3o-'+i);
+    if(!qta||!ota) return q;
+    const lines=ota.value.split('\n');
+    const correctLine=lines.find(l=>l.startsWith('correct:'));
+    const correct=correctLine?parseInt(correctLine.split(':')[1]):q.correct;
+    const opts=lines.filter(l=>!l.startsWith('correct:')).join('').split('|').map(o=>o.trim()).filter(Boolean);
+    return {...q, q:qta.value.trim(), opts:opts.length?opts:q.opts, correct};
+  });
+}
+
+function launchGame(){
+  readConfig();
+  document.getElementById('mc').style.display='none';
+  document.getElementById('game').style.display='block';
+  document.getElementById('back-btn').style.display='block';
+  updateLevelBar();
+  runL1(0);
+}
+
+function returnToMC(){
+  document.getElementById('game').style.display='none';
+  document.getElementById('mc').style.display='flex';
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('log').innerHTML='';
+  document.getElementById('scene').innerHTML='';
+  document.getElementById('actions').innerHTML='';
+  document.getElementById('score-bar').innerHTML='';
+  document.getElementById('certificate').style.display='none';
+  level=1; mistakes=0; score=0; totalQ=0;
+  clearTimers();
+}
+
+// ─── GAME ENGINE ─────────────────────────────────────────────────────────────
+let level=1, mistakes=0, score=0, totalQ=0;
+let timers=[];
+const logEl=()=>document.getElementById('log');
+const sceneEl=()=>document.getElementById('scene');
+const actionsEl=()=>document.getElementById('actions');
+const scoreBarEl=()=>document.getElementById('score-bar');
+
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+function scrollBottom(){window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
+function updateLevelBar(){
+  [1,2,3].forEach(n=>{
+    const d=document.getElementById('dot'+n);
+    d.className='lvl-dot';
+    if(n<level) d.classList.add('done');
+    else if(n===level) d.classList.add('active');
+  });
+}
+function updateScore(){
+  if(level===1){scoreBarEl().innerHTML='';return;}
+  scoreBarEl().innerHTML=`Score: <span>${score}/${totalQ}</span> &nbsp;|&nbsp; Mistakes: <span>${mistakes}</span>`;
+}
+
+function getGraphicHTML(key){
+  if(CFG.images[key]){
+    const cap=CFG.captions[key]||'';
+    return `<figure class="graphic"><img src="${CFG.images[key]}" alt="${key}"/>${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;
+  }
+  const svgDiv=document.getElementById('svg-'+key);
+  if(!svgDiv) return '';
+  const cap=CFG.captions[key]||'';
+  return `<figure class="graphic">${svgDiv.innerHTML}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;
+}
+
+function archiveScene(){
+  const lines=Array.from(sceneEl().querySelectorAll('.line'));
+  if(!lines.length&&!sceneEl().querySelector('.graphic')) return;
+  const gap=document.createElement('div'); gap.className='scene-gap';
+  lines.forEach(l=>{
+    const p=document.createElement('p');
+    p.className='line'+(l.classList.contains('sup')?' sup':'');
+    p.textContent=l.textContent;
+    gap.appendChild(p);
+  });
+  logEl().appendChild(gap);
+}
+
+function renderLines(lines, onDone){
+  sceneEl().innerHTML=''; actionsEl().innerHTML=''; scoreBarEl().innerHTML='';
+  clearTimers();
+  const speed=CFG.speed||0;
+  const delay=CFG.delay||0;
+
+  if(speed===0){
+    // instant mode
+    lines.forEach(line=>{
+      const p=document.createElement('p');
+      let cls='line';
+      if(line.sup) cls+=' sup';
+      if(line.cls) cls+=' '+line.cls;
+      p.className=cls; p.textContent=line.text;
+      sceneEl().appendChild(p);
+    });
+    if(onDone){ const t=setTimeout(()=>{onDone();updateScore();scrollBottom();},delay+50); timers.push(t); }
+    scrollBottom();
+  } else {
+    // typing mode — chain lines sequentially
+    let chain=0;
+    lines.forEach((line,idx)=>{
+      const t=setTimeout(()=>{
+        const p=document.createElement('p');
+        let cls='line';
+        if(line.sup) cls+=' sup';
+        if(line.cls) cls+=' '+line.cls;
+        p.className=cls;
+        sceneEl().appendChild(p);
+        typeText(p, line.text, speed, ()=>{
+          scrollBottom();
+          if(idx===lines.length-1 && onDone){
+            const t2=setTimeout(()=>{onDone();updateScore();scrollBottom();},delay+50);
+            timers.push(t2);
+          }
+        });
+      }, chain);
+      chain += line.text.length*speed + delay + 100;
+      timers.push(t);
+    });
+  }
+}
+
+function typeText(el, text, speed, onDone){
+  let i=0;
+  const cur=document.createElement('span');
+  cur.style.opacity='.4'; cur.textContent='▋';
+  el.appendChild(cur);
+  const iv=setInterval(()=>{
+    i++;
+    el.textContent=text.slice(0,i);
+    el.appendChild(cur);
+    if(i>=text.length){ clearInterval(iv); cur.remove(); if(onDone) onDone(); }
+  }, speed);
+}
+
+function addButtons(btns){
+  actionsEl().innerHTML='';
+  btns.forEach(b=>{
+    const btn=document.createElement('button');
+    btn.className='act-btn';
+    btn.textContent=b.label;
+    btn.onclick=()=>b.action(btn);
+    actionsEl().appendChild(btn);
+  });
+  scrollBottom();
+}
+
+function parseLine(raw){
+  const sup=raw.startsWith('[sup]');
+  const text=sup?raw.slice(5):raw;
+  return {text,sup};
+}
+
+// ─── LEVEL 1 ─────────────────────────────────────────────────────────────────
+const L1NAV = [
+  { btn:[{label:'look around',go:1}] },
+  { btn:[{label:'check the patient',go:2},{label:'examine the tray',go:3}] },
+  { btn:[{label:'position the patient',go:4},{label:'examine the tray',go:3}] },
+  { btn:[{label:'recite the steps',go:12},{label:'check the patient',go:2}] },
+  { btn:[{label:'prep and drape the field',go:5}] },
+  { btn:[{label:'pick up the ultrasound probe',go:6}] },
+  { btn:[{label:'advance the needle',go:7}] },
+  { btn:[{label:'advance the guidewire',go:8}] },
+  { btn:[{label:'dilate the tract',go:9}] },
+  { btn:[{label:'advance the catheter',go:10}] },
+  { btn:[{label:'confirm placement',go:11}] },
+  { btn:[{label:'proceed to level 2',go:'l2'}] },
+  { btn:[{label:'position the patient',go:4}] },
+];
+
+function runL1(idx){
+  if(idx==='l2'){ level=2; updateLevelBar(); runL2(); return; }
+  const s=CFG.l1scenes[idx];
+  const nav=L1NAV[idx];
+  archiveScene();
+  const lines=s.lines.map(parseLine);
+  renderLines(lines,()=>{
+    if(s.graphic) sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML(s.graphic));
+    addButtons(nav.btn.map(b=>({label:b.label,action:()=>runL1(b.go)})));
+  });
+}
+
+// ─── LEVEL 2 ─────────────────────────────────────────────────────────────────
+function mkQ(qdata, afterCorrect){
+  return function(){
+    archiveScene();
+    renderLines([{text:qdata.q,sup:false}],()=>{
+      if(qdata.graphic) sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML(qdata.graphic));
+      let answered=false;
+      const btns=(qdata.opts||[]).map((o,i)=>({
+        label:o,
+        action:(btn)=>{
+          if(answered) return;
+          answered=true;
+          Array.from(actionsEl().children).forEach(b=>b.classList.add('disabled'));
+          if(i===qdata.correct){
+            btn.classList.add('correct'); score++; updateScore();
+            setTimeout(()=>afterCorrect(),700);
+          } else {
+            btn.classList.add('wrong'); mistakes++; updateScore();
+            const wl=(qdata.wrongLines||[]).map(parseLine);
+            setTimeout(()=>{
+              archiveScene();
+              renderLines(wl,()=>{
+                addButtons([{label:qdata.mgmt||'continue',action:()=>{archiveScene();afterCorrect();}}]);
+              });
+            },800);
+          }
+        }
+      }));
+      addButtons(btns);
+    });
+  };
+}
+
+function runL2(){
+  level=2; updateLevelBar(); mistakes=0; score=0; totalQ=8;
+  archiveScene();
+  renderLines([
+    {text:'The room again. But the light is already on.',sup:false},
+    {text:'Moreau is back. Different night. Same stakes.',sup:false},
+    {text:'The supervisor stands in the corner, arms folded. She will not lead you this time.',sup:false},
+    {text:'Show her what you know.',sup:false},
+  ],()=>addButtons([{label:'begin',action:l2_equipment}]));
+}
+
+function l2_equipment(isRetry){
+  archiveScene();
+  const items=['Triple-lumen central venous catheter','J-tipped guidewire','Chlorhexidine swabs','Arterial line kit','Finder needle + syringe','Dilator','NG tube','Sterile drapes','Foley catheter','10 mL saline flushes'];
+  const correct=new Set([0,1,2,4,5,7,9]);
+  const selected=new Set();
+  sceneEl().innerHTML='';
+  const q=document.createElement('p'); q.className='line'; q.textContent='Select the items you need for this procedure.';
+  sceneEl().appendChild(q);
+  sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML('tray'));
+  actionsEl().innerHTML='';
+  const confirmBtn=document.createElement('button');
+  confirmBtn.className='act-btn'; confirmBtn.textContent='confirm selection';
+  confirmBtn.style.borderColor='var(--green)'; confirmBtn.style.display='none';
+  items.forEach((item,i)=>{
+    const btn=document.createElement('button'); btn.className='act-btn'; btn.textContent=item;
+    btn.onclick=()=>{
+      if(selected.has(i)){selected.delete(i);btn.classList.remove('correct');}
+      else{selected.add(i);btn.classList.add('correct');}
+      confirmBtn.style.display=selected.size>0?'inline-block':'none';
+    };
+    actionsEl().appendChild(btn);
+  });
+  actionsEl().appendChild(confirmBtn);
+  confirmBtn.onclick=()=>{
+    const wrong=[...selected].filter(i=>!correct.has(i));
+    const missed=[...correct].filter(i=>!selected.has(i));
+    Array.from(actionsEl().children).forEach(b=>b.classList.add('disabled'));
+    if(!wrong.length&&!missed.length){
+      score++; updateScore();
+      setTimeout(()=>{archiveScene(); runL2step(1);},600);
+    } else {
+      mistakes++; updateScore();
+      const fb=[];
+      if(wrong.length) fb.push({text:'Incorrect: '+wrong.map(i=>items[i]).join(', ')+'.',sup:false,cls:'bad'});
+      if(missed.length) fb.push({text:'Missed: '+missed.map(i=>items[i]).join(', ')+'.',sup:false,cls:'warn'});
+      fb.push({text:'The supervisor re-lays the tray without a word.',sup:true});
+      setTimeout(()=>{archiveScene();renderLines(fb,()=>{addButtons([{label:'try again',action:()=>l2_equipment(true)}]);});},600);
+    }
+  };
+  scrollBottom();
+}
+
+const L2_AFTER = [
+  l2_equipment,
+  ()=>{ archiveScene(); sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML('position')); const p=document.createElement('p');p.className='line';p.textContent='Correct. Trendelenburg, head turned left.';sceneEl().appendChild(p);addButtons([{label:'continue',action:()=>runL2step(2)}]);scrollBottom();},
+  ()=>{ archiveScene(); sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML('us')); const p=document.createElement('p');p.className='line';p.textContent='Correct. Vein identified.';sceneEl().appendChild(p);addButtons([{label:'continue',action:()=>runL2step(3)}]);scrollBottom();},
+  ()=>runL2step(4),
+  ()=>runL2step(5),
+  ()=>runL2step(6),
+  ()=>{ archiveScene(); sceneEl().insertAdjacentHTML('beforeend',getGraphicHTML('cxr')); const p=document.createElement('p');p.className='line';p.textContent='Correct. Pneumothorax identified and managed.';sceneEl().appendChild(p);addButtons([{label:'continue',action:l2_complete}]);scrollBottom();},
+];
+
+function runL2step(i){
+  const qdata=CFG.l2questions[i];
+  if(!qdata||qdata.type==='checklist') return;
+  mkQ(qdata, L2_AFTER[i])();
+}
+
+function l2_complete(){
+  archiveScene();
+  const pct=Math.round((score/totalQ)*100);
+  const passed=pct>=80;
+  renderLines([
+    {text:'The line is in. Moreau is stable.',sup:false},
+    {text:`Level 2 complete. Score: ${score}/${totalQ} (${pct}%). Mistakes: ${mistakes}.`,sup:false,cls:passed?'good':'warn'},
+    passed?{text:'You demonstrate working knowledge of the procedure.',sup:false,cls:'good'}:{text:'Score below 80%. Review your errors and try again.',sup:false,cls:'bad'},
+  ],()=>{
+    if(passed) addButtons([{label:'proceed to level 3',action:runL3}]);
+    else addButtons([{label:'retry level 2',action:runL2}]);
+  });
+}
+
+// ─── LEVEL 3 ─────────────────────────────────────────────────────────────────
+function runL3(){
+  level=3; updateLevelBar(); mistakes=0; score=0; totalQ=7;
+  archiveScene();
+  renderLines([
+    {text:'The room is dark.',sup:false},
+    {text:'No supervisor. No voice from the doorway.',sup:false},
+    {text:'A patient. A tray. A task.',sup:false},
+    {text:'You know what to do.',sup:false},
+  ],()=>addButtons([{label:'begin',action:()=>runL3step(0)}]));
+}
+
+function runL3step(i){
+  const qdata=CFG.l3questions[i];
+  if(!qdata) return;
+  if(qdata.type==='sequence'){ l3_sequence(); return; }
+  const next = i<CFG.l3questions.length-1 ? ()=>runL3step(i+1) : l3_complete;
+  mkQ(qdata, next)();
+}
+
+function l3_sequence(){
+  archiveScene();
+  const steps=['Confirm placement with CXR','Ultrasound identification of vessel','Advance guidewire','Patient positioning','Prep and drape','Catheter insertion','Dilate the tract','Needle insertion and aspiration'];
+  const correctOrder=[3,4,1,7,2,6,5,0];
+  const order=[];
+  sceneEl().innerHTML='';
+  const q=document.createElement('p'); q.className='line';
+  q.textContent='Place the procedural steps in the correct order. Select them one by one.';
+  sceneEl().appendChild(q);
+  actionsEl().innerHTML='';
+  const od=document.createElement('p');
+  od.style.cssText='font-size:12px;color:var(--muted);margin-bottom:.8rem;font-family:var(--font)';
+  od.textContent='Selected: —';
+  actionsEl().appendChild(od);
+  steps.forEach((s,i)=>{
+    const btn=document.createElement('button'); btn.className='act-btn'; btn.textContent=s;
+    btn.onclick=()=>{
+      if(order.includes(i)) return;
+      order.push(i); btn.classList.add('correct','disabled');
+      od.textContent='→ '+order.map(x=>steps[x]).join(' → ');
+      if(order.length===steps.length){
+        Array.from(actionsEl().children).forEach(b=>b.classList.add('disabled'));
+        const ok=order.every((v,idx)=>v===correctOrder[idx]);
+        setTimeout(()=>{
+          if(ok){ score++; updateScore(); archiveScene(); renderLines([{text:'Correct sequence.',sup:false,cls:'good'}],()=>addButtons([{label:'continue',action:()=>runL3step(3)}])); }
+          else { mistakes++; updateScore(); archiveScene(); renderLines([{text:'Incorrect sequence.',sup:false,cls:'bad'},{text:'Correct: '+correctOrder.map(i=>steps[i]).join(' → '),sup:false,cls:'warn'}],()=>addButtons([{label:'continue',action:()=>runL3step(3)}])); }
+        },600);
+      }
+    };
+    actionsEl().appendChild(btn);
+  });
+  scrollBottom();
+}
+
+function l3_complete(){
+  archiveScene();
+  const pct=Math.round((score/totalQ)*100);
+  const passed=pct>=70;
+  renderLines([
+    {text:'The procedure is done. The room is quiet.',sup:false},
+    {text:`Final score: ${score}/${totalQ} (${pct}%). Mistakes: ${mistakes}.`,sup:false,cls:passed?'good':'warn'},
+    passed?{text:'You have demonstrated independent procedural knowledge.',sup:false,cls:'good'}:{text:'Score below 70%. Review the concepts and try again.',sup:false,cls:'warn'},
+  ],()=>{
+    if(passed) addButtons([{label:'receive certificate',action:showCertificate}]);
+    else addButtons([{label:'repeat level 3',action:runL3}]);
+  });
+}
+
+// ─── CERTIFICATE ─────────────────────────────────────────────────────────────
+function showCertificate(){
+  actionsEl().innerHTML=''; archiveScene(); sceneEl().innerHTML='';
+  const name=prompt('Enter your name for the certificate:','') || 'Anonymous Student';
+  document.getElementById('cert-name').textContent=name;
+  document.getElementById('cert-date').textContent=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('certificate').style.display='block';
+  scrollBottom();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildTextEditors();
+updateSpeedLabel();
+updateDelayLabel();
+CFG.l1scenes=[...DEFAULT_L1];
+CFG.l2questions=[...DEFAULT_L2];
+CFG.l3questions=[...DEFAULT_L3];
+</script>
+</body>
+</html>
